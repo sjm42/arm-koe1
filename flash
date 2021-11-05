@@ -2,6 +2,12 @@
 set -e
 set -x
 cargo build --release
+
+# for nucleo F411
 cargo flash --chip STM32F411RETx --release
+
+# for blue pill
+# cargo flash --chip STM32F103C8 --release
+
 exit 0
 # EOF
