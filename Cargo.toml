@@ -5,13 +5,26 @@ readme = "README.md"
 name = "arm-koe1"
 version = "0.1.0"
 
+[features]
+default = ["blue_pill"]
+blue_pill = ["stm32f1"]
+nucleo_f411 = ["stm32f4"]
+
+[dependencies.stm32f1]
+optional = true
+version = "0"
+features = ["stm32f103", "rt"]
+
+[dependencies.stm32f4]
+optional = true
+version = "0"
+features = ["stm32f411", "rt"]
+
 [dependencies]
 cortex-m = "0"
 cortex-m-rt = "0"
 cortex-m-semihosting = "0"
 panic-halt = "0"
-# stm32f1 = {version="0", features=["stm32f103", "rt"] }
-stm32f4 = { version = "0", features = ["stm32f411", "rt"] }
 
 # Uncomment for the panic example.
 # panic-itm = "0.4.1"

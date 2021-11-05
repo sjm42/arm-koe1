@@ -11,29 +11,97 @@ use panic_halt as _; // you can put a breakpoint on `rust_begin_unwind` to catch
 
 use cortex_m::asm;
 use cortex_m_rt::entry;
+
+// https://www.st.com/en/microcontrollers-microprocessors/stm32f103.html
+#[cfg(feature = "blue_pill")]
+use stm32f1::stm32f103;
+
+// https://www.st.com/en/microcontrollers-microprocessors/stm32f411re.html
+#[cfg(feature = "nucleo_f411")]
 use stm32f4::stm32f411;
 
-// User led LD2 is on PA5
+// On Nucleo stm32f411 User led LD2 is on PA5
+
+#[cfg(feature = "nucleo_f411")]
+fn init_f411() -> stm32f411::Peripherals {
+    let p = stm32f411::Peripherals::take().unwrap();
+
+    // Enable GPIOA clock
+    let rcc = &p.RCC;
+    rcc.ahb1enr.write(|w| w.gpioaen().set_bit());
+
+    // Enable push-pull output on PA5
+    let pa = &p.GPIOA;
+    pa.otyper.write(|w| w.ot5().clear_bit());
+    pa.moder.write(|w| w.moder5().output());
+    p
+}
+#[cfg(feature = "nucleo_f411")]
+fn set_led_f411(p: &stm32f411::Peripherals, state: bool) {
+    io_port = &p.GPIOA;
+    io_port.odr.write(|w| w.odr5().bit(state));
+}
+
+// On blue pill stm32f103 user led is on PC13
+
+#[cfg(feature = "blue_pill")]
+fn init_f103() -> stm32f103::Peripherals {
+    let p = stm32f103::Peripherals::take().unwrap();
+
+    let rcc = &p.RCC;
+    let pc = &p.GPIOC;
+
+    // Enable GPIOC clock
+    // rcc.apb2enr.modify(|_r, w| w.iopcen().enabled());
+    rcc.apb2enr.write(|w| w.iopcen().set_bit());
+
+    // Enable push-pull output on PC13
+    pc.crh.modify(|_r, w| {
+        w.mode13().output();
+        w.cnf13().push_pull();
+        w
+    });
+    p
+}
+
+#[cfg(feature = "blue_pill")]
+fn set_led_f103(p: &stm32f103::Peripherals, state: bool) {
+    let io_port = &p.GPIOC;
+
+    // Using r/w output data register:
+    // io_port.odr.modify(|_r, w| w.odr13().bit(state));
+
+    // Using port bit set/reset register
+    if state {
+        io_port.bsrr.write(|w| w.br13().set_bit());
+    } else {
+        io_port.bsrr.write(|w| w.bs13().set_bit());
+    }
+}
 
 #[entry]
 fn main() -> ! {
-    let p = stm32f411::Peripherals::take().unwrap();
-    let rcc = p.RCC;
-
-    // Enable GPIOA clock
-    rcc.ahb1enr.write(|w| w.gpioaen().set_bit());
-
-    let pa = &p.GPIOA;
-
-    pa.otyper.write(|w| w.ot5().clear_bit());
-    pa.moder.write(|w| w.moder5().output());
-    pa.pupdr.write(|w| w.pupdr12().pull_up());
+    let p;
+    #[cfg(feature = "nucleo_f411")]
+    {
+        p = init_f411();
+    }
+    #[cfg(feature = "blue_pill")]
+    {
+        p = init_f103();
+    }
 
     loop {
-        // let b = pa.odr.read().odr5().bit_is_clear();
-        pa.odr.write(|w| w.odr5().bit(true));
+        #[cfg(feature = "nucleo_f411")]
+        set_led_f411(&p, true);
+        #[cfg(feature = "blue_pill")]
+        set_led_f103(&p, true);
         delay(200000);
-        pa.odr.write(|w| w.odr5().bit(false));
+
+        #[cfg(feature = "nucleo_f411")]
+        set_led_f411(&p, false);
+        #[cfg(feature = "blue_pill")]
+        set_led_f103(&p, false);
         delay(800000);
     }
 }
