@@ -4,13 +4,9 @@
 #![no_main]
 
 // pick a panicking behavior
-use panic_halt as _; // you can put a breakpoint on `rust_begin_unwind` to catch panics
-                     // use panic_abort as _; // requires nightly
-                     // use panic_itm as _; // logs messages over ITM; requires ITM support
-                     // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
-
 use cortex_m::asm;
 use cortex_m_rt::entry;
+use panic_halt as _;
 
 // https://www.st.com/en/microcontrollers-microprocessors/stm32f103.html
 #[cfg(feature = "blue_pill")]
@@ -47,9 +43,9 @@ fn init_f411() -> stm32f411::Peripherals {
 
     // Enable clock outputs 1+2
     rcc.cfgr.modify(|_r, w| {
-        w.mco1pre().div1();
+        w.mco1pre().div5();
         w.mco1().hsi();
-        w.mco2pre().div1();
+        w.mco2pre().div5();
         w.mco2().sysclk();
         w
     });
@@ -58,16 +54,12 @@ fn init_f411() -> stm32f411::Peripherals {
     pa.otyper.modify(|_r, w| w.ot5().push_pull());
     pa.ospeedr.modify(|_r, w| w.ospeedr5().low_speed());
     pa.moder.modify(|_r, w| w.moder5().output());
-
     p
 }
 
 #[cfg(feature = "nucleo_f411")]
 fn set_led_f411(p: &stm32f411::Peripherals, state: bool) {
     let io_port = &p.GPIOA;
-
-    // Using r/w output data register:
-    // io_port.odr.modify(|_r, w| w.odr5().bit(state));
 
     // Using port bit set/reset register
     if state {
@@ -102,9 +94,6 @@ fn init_f103() -> stm32f103::Peripherals {
 #[cfg(feature = "blue_pill")]
 fn set_led_f103(p: &stm32f103::Peripherals, state: bool) {
     let io_port = &p.GPIOC;
-
-    // Using r/w output data register:
-    // io_port.odr.modify(|_r, w| w.odr13().bit(!state));
 
     // Using port bit set/reset register
     if state {
