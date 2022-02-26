@@ -14,18 +14,22 @@ use std::io::Write;
 use std::path::PathBuf;
 
 fn main() {
+    let mut memory_x = None;
+    if let Some(_feature) = env::var_os("CARGO_FEATURE_STM32F1") {
+        memory_x = Some(include_bytes!("memory-stm32f1.x").to_vec());
+    } else if let Some(_feature) = env::var_os("CARGO_FEATURE_STM32F4") {
+        memory_x = Some(include_bytes!("memory-stm32f4.x").to_vec());
+    }
+
     // Put `memory.x` in our output directory and ensure it's
     // on the linker search path.
     let out = &PathBuf::from(env::var_os("OUT_DIR").unwrap());
     File::create(out.join("memory.x"))
         .unwrap()
-        .write_all(include_bytes!("memory.x"))
+        .write_all(&memory_x.unwrap())
         .unwrap();
-    println!("cargo:rustc-link-search={}", out.display());
 
-    // By default, Cargo will re-run a build script whenever
-    // any file in the project changes. By specifying `memory.x`
-    // here, we ensure the build script is only re-run when
-    // `memory.x` is changed.
+    println!("cargo:rustc-link-search={}", out.display());
     println!("cargo:rerun-if-changed=memory.x");
+    println!("cargo:rerun-if-changed=build.rs");
 }

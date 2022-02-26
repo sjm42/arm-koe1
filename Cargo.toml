@@ -2,7 +2,7 @@
 authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
 edition = "2021"
 readme = "README.md"
-name = "arm-koe1"
+name = "stm32-test1"
 version = "0.1.0"
 
 [features]
@@ -23,14 +23,14 @@ features = ["stm32f411", "rt"]
 [dependencies]
 cortex-m = "0"
 cortex-m-rt = "0"
-cortex-m-semihosting = "0"
+# cortex-m-semihosting = "0"
 panic-halt = "0"
 
 # Uncomment for the panic example.
 # panic-itm = "0.4.1"
 
 # Uncomment for the allocator example.
-alloc-cortex-m = "0"
+# alloc-cortex-m = "0"
 
 # Uncomment for the device example.
 # Update `memory.x`, set target to `thumbv7em-none-eabihf` in `.cargo/config`,
@@ -41,7 +41,7 @@ alloc-cortex-m = "0"
 
 # this lets you use `cargo fix`!
 [[bin]]
-name = "arm-koe1"
+name = "stm32-test1"
 test = false
 bench = false
 
