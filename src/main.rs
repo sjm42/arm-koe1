@@ -9,17 +9,18 @@ use cortex_m_rt::entry;
 use panic_halt as _;
 
 // https://www.st.com/en/microcontrollers-microprocessors/stm32f103.html
-#[cfg(feature = "blue_pill")]
+#[cfg(feature = "stm32f1")]
 use stm32f1::stm32f103;
 
 // https://www.st.com/en/microcontrollers-microprocessors/stm32f411re.html
-#[cfg(feature = "nucleo_f411")]
+#[cfg(feature = "stm32f4")]
 use stm32f4::stm32f411;
 
 // On Nucleo stm32f411 User led LD2 is on PA5
+// On Black pill user led is on PC13
 
-#[cfg(feature = "nucleo_f411")]
-fn init_f411() -> stm32f411::Peripherals {
+#[cfg(feature = "stm32f4")]
+fn init_f4() -> stm32f411::Peripherals {
     let p = stm32f411::Peripherals::take().unwrap();
     let rcc = &p.RCC;
     let pa = &p.GPIOA;
@@ -50,31 +51,54 @@ fn init_f411() -> stm32f411::Peripherals {
         w
     });
 
-    // Enable push-pull output on PA5 (LED)
-    pa.otyper.modify(|_r, w| w.ot5().push_pull());
-    pa.ospeedr.modify(|_r, w| w.ospeedr5().low_speed());
-    pa.moder.modify(|_r, w| w.moder5().output());
+    #[cfg(feature = "nucleo_f411")]
+    {
+        // Enable push-pull output on PA5 (LED) on Nucleo F411
+        pa.otyper.modify(|_r, w| w.ot5().push_pull());
+        pa.ospeedr.modify(|_r, w| w.ospeedr5().low_speed());
+        pa.moder.modify(|_r, w| w.moder5().output());
+    }
+    #[cfg(feature = "black_pill")]
+    {
+        // Enable push-pull output on PC13 (LED) on Black pill
+        pc.otyper.modify(|_r, w| w.ot13().push_pull());
+        pc.ospeedr.modify(|_r, w| w.ospeedr13().low_speed());
+        pc.moder.modify(|_r, w| w.moder13().output());
+    }
     p
 }
 
-#[cfg(feature = "nucleo_f411")]
-fn set_led_f411(p: &stm32f411::Peripherals, state: bool) {
+#[cfg(feature = "stm32f4")]
+fn set_led_f4(p: &stm32f411::Peripherals, state: bool) {
+    #[cfg(feature = "nucleo_f411")]
     let io_port = &p.GPIOA;
+    #[cfg(feature = "black_pill")]
+    let io_port = &p.GPIOC;
 
     // Using port bit set/reset register
     if state {
         // bs5() = bit set, pin 5
+        #[cfg(feature = "nucleo_f411")]
         io_port.bsrr.write(|w| w.bs5().set_bit());
+
+        // br13() = bit reset, pin 13
+        #[cfg(feature = "black_pill")]
+        io_port.bsrr.write(|w| w.br13().set_bit());
     } else {
         // br5() = bit reset, pin 5
+        #[cfg(feature = "nucleo_f411")]
         io_port.bsrr.write(|w| w.br5().set_bit());
+
+        // bs13() = bit set, pin 13
+        #[cfg(feature = "black_pill")]
+        io_port.bsrr.write(|w| w.bs13().set_bit());
     }
 }
 
 // On blue pill stm32f103 user led is on PC13
 
-#[cfg(feature = "blue_pill")]
-fn init_f103() -> stm32f103::Peripherals {
+#[cfg(feature = "stm32f1")]
+fn init_f1() -> stm32f103::Peripherals {
     let p = stm32f103::Peripherals::take().unwrap();
     let rcc = &p.RCC;
     let pc = &p.GPIOC;
@@ -91,8 +115,8 @@ fn init_f103() -> stm32f103::Peripherals {
     p
 }
 
-#[cfg(feature = "blue_pill")]
-fn set_led_f103(p: &stm32f103::Peripherals, state: bool) {
+#[cfg(feature = "stm32f1")]
+fn set_led_f1(p: &stm32f103::Peripherals, state: bool) {
     let io_port = &p.GPIOC;
 
     // Using port bit set/reset register
@@ -108,26 +132,26 @@ fn set_led_f103(p: &stm32f103::Peripherals, state: bool) {
 #[entry]
 fn main() -> ! {
     let p;
-    #[cfg(feature = "nucleo_f411")]
+    #[cfg(feature = "stm32f4")]
     {
-        p = init_f411();
+        p = init_f4();
     }
-    #[cfg(feature = "blue_pill")]
+    #[cfg(feature = "stm32f1")]
     {
-        p = init_f103();
+        p = init_f1();
     }
 
     loop {
-        #[cfg(feature = "nucleo_f411")]
-        set_led_f411(&p, true);
-        #[cfg(feature = "blue_pill")]
-        set_led_f103(&p, true);
+        #[cfg(feature = "stm32f4")]
+        set_led_f4(&p, true);
+        #[cfg(feature = "stm32f1")]
+        set_led_f1(&p, true);
         delay(200000);
 
-        #[cfg(feature = "nucleo_f411")]
-        set_led_f411(&p, false);
-        #[cfg(feature = "blue_pill")]
-        set_led_f103(&p, false);
+        #[cfg(feature = "stm32f4")]
+        set_led_f4(&p, false);
+        #[cfg(feature = "stm32f1")]
+        set_led_f1(&p, false);
         delay(800000);
     }
 }

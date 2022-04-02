@@ -2,12 +2,13 @@
 authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
 edition = "2021"
 readme = "README.md"
-name = "stm32-test1"
-version = "0.1.0"
+name = "cortex-m-test1"
+version = "0.2.0"
 
 [features]
-default = ["nucleo_f411"]
+default = ["blue_pill"]
 blue_pill = ["stm32f1"]
+black_pill = ["stm32f4"]
 nucleo_f411 = ["stm32f4"]
 
 [dependencies.stm32f1]
@@ -28,7 +29,7 @@ panic-halt = "0"
 
 # this lets you use `cargo fix`!
 [[bin]]
-name = "stm32-test1"
+name = "cortex-m-test1"
 test = false
 bench = false
 
