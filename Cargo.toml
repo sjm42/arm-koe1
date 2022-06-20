@@ -3,7 +3,7 @@ authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
 edition = "2021"
 readme = "README.md"
 name = "cortex-m-test1"
-version = "0.2.0"
+version = "0.2.1"
 
 [features]
 default = ["blue_pill"]
@@ -13,18 +13,18 @@ nucleo_f411 = ["stm32f4"]
 
 [dependencies.stm32f1]
 optional = true
-version = "0"
+version = "0.14"
 features = ["stm32f103", "rt"]
 
 [dependencies.stm32f4]
 optional = true
-version = "0"
+version = "0.14"
 features = ["stm32f411", "rt"]
 
 [dependencies]
-cortex-m = "0"
-cortex-m-rt = "0"
-panic-halt = "0"
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+panic-halt = "0.2"
 
 
 # this lets you use `cargo fix`!
