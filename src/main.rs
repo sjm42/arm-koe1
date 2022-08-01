@@ -16,8 +16,20 @@ use stm32f1::stm32f103;
 #[cfg(feature = "stm32f4")]
 use stm32f4::stm32f411;
 
+#[cfg(feature = "nrf52840")]
+use nrf52840_pac;
+
 // On Nucleo stm32f411 User led LD2 is on PA5
 // On Black pill user led is on PC13
+
+#[cfg(feature = "nrf52840")]
+fn init_nrf52() -> nrf52840_pac::Peripherals {
+    let p = nrf52840_pac::Peripherals::take().unwrap();
+    let p0 = &p.P0;
+    let p1 = &p.P1;
+
+    p
+}
 
 #[cfg(feature = "stm32f4")]
 fn init_f4() -> stm32f411::Peripherals {

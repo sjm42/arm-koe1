@@ -1,5 +1,5 @@
 # rust-toolchain.toml
 [toolchain]
 channel = "nightly"
-#channel = "stable"
+# channel = "stable"
 # EOF

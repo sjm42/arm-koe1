@@ -3,23 +3,36 @@ authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
 edition = "2021"
 readme = "README.md"
 name = "cortex-m-test1"
-version = "0.2.1"
+version = "0.3.0"
 
 [features]
+stm32f103 = []
+stm32f411 = []
+nrf52840 = []
+
 default = ["blue_pill"]
-blue_pill = ["stm32f1"]
-black_pill = ["stm32f4"]
-nucleo_f411 = ["stm32f4"]
+# default = ["nrf52840_dongle"]
+
+blue_pill = ["stm32f103", "stm32f1"]
+black_pill = ["stm32f411", "stm32f4"]
+nucleo_f411 = ["stm32f411", "stm32f4"]
+nrf52840_dongle = ["nrf52840", "nrf52840-pac"]
+nrf52840_dk = ["nrf52840", "nrf52840-pac"]
 
 [dependencies.stm32f1]
 optional = true
-version = "0.14"
+version = "0.15"
 features = ["stm32f103", "rt"]
 
 [dependencies.stm32f4]
 optional = true
-version = "0.14"
+version = "0.15"
 features = ["stm32f411", "rt"]
+
+[dependencies.nrf52840-pac]
+optional = true
+version = "0.11"
+features = ["rt"]
 
 [dependencies]
 cortex-m = "0.7"
