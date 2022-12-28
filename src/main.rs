@@ -22,12 +22,22 @@ use nrf52840_pac;
 // On Nucleo stm32f411 User led LD2 is on PA5
 // On Black pill user led is on PC13
 
-#[cfg(feature = "nrf52840")]
-fn init_nrf52() -> nrf52840_pac::Peripherals {
-    let p = nrf52840_pac::Peripherals::take().unwrap();
-    let p0 = &p.P0;
-    let p1 = &p.P1;
+// On blue pill stm32f103 user led is on PC13
+#[cfg(feature = "stm32f1")]
+fn init_f1() -> stm32f103::Peripherals {
+    let p = stm32f103::Peripherals::take().unwrap();
+    let rcc = &p.RCC;
+    let pc = &p.GPIOC;
 
+    // Enable GPIOC clock
+    rcc.apb2enr.modify(|_r, w| w.iopcen().enabled());
+
+    // Enable push-pull output on PC13
+    pc.crh.modify(|_r, w| {
+        w.mode13().output();
+        w.cnf13().push_pull();
+        w
+    });
     p
 }
 
@@ -80,6 +90,31 @@ fn init_f4() -> stm32f411::Peripherals {
     p
 }
 
+#[cfg(feature = "nrf52840")]
+fn init_nrf52() -> nrf52840_pac::Peripherals {
+    let p = nrf52840_pac::Peripherals::take().unwrap();
+
+    // let p0 = &p.P0;
+    // let p1 = &p.P1;
+    // TODO...
+
+    p
+}
+
+#[cfg(feature = "stm32f1")]
+fn set_led_f1(p: &stm32f103::Peripherals, state: bool) {
+    let io_port = &p.GPIOC;
+
+    // Using port bit set/reset register
+    if state {
+        // true -> bit_reset (br13), because led is draining current
+        io_port.bsrr.write(|w| w.br13().set_bit());
+    } else {
+        // false -> bit set (bs13)
+        io_port.bsrr.write(|w| w.bs13().set_bit());
+    }
+}
+
 #[cfg(feature = "stm32f4")]
 fn set_led_f4(p: &stm32f411::Peripherals, state: bool) {
     #[cfg(feature = "nucleo_f411")]
@@ -107,63 +142,30 @@ fn set_led_f4(p: &stm32f411::Peripherals, state: bool) {
     }
 }
 
-// On blue pill stm32f103 user led is on PC13
-
-#[cfg(feature = "stm32f1")]
-fn init_f1() -> stm32f103::Peripherals {
-    let p = stm32f103::Peripherals::take().unwrap();
-    let rcc = &p.RCC;
-    let pc = &p.GPIOC;
-
-    // Enable GPIOC clock
-    rcc.apb2enr.modify(|_r, w| w.iopcen().enabled());
-
-    // Enable push-pull output on PC13
-    pc.crh.modify(|_r, w| {
-        w.mode13().output();
-        w.cnf13().push_pull();
-        w
-    });
-    p
-}
-
-#[cfg(feature = "stm32f1")]
-fn set_led_f1(p: &stm32f103::Peripherals, state: bool) {
-    let io_port = &p.GPIOC;
-
-    // Using port bit set/reset register
-    if state {
-        // true -> bit_reset (br13), because led is draining current
-        io_port.bsrr.write(|w| w.br13().set_bit());
-    } else {
-        // false -> bit set (bs13)
-        io_port.bsrr.write(|w| w.bs13().set_bit());
-    }
-}
-
 #[entry]
 fn main() -> ! {
-    let p;
-    #[cfg(feature = "stm32f4")]
-    {
-        p = init_f4();
-    }
     #[cfg(feature = "stm32f1")]
-    {
-        p = init_f1();
-    }
+    let p = init_f1();
+
+    #[cfg(feature = "stm32f4")]
+    let p = init_f4();
+
+    #[cfg(feature = "nrf52840")]
+    let p = init_nrf52();
 
     loop {
-        #[cfg(feature = "stm32f4")]
-        set_led_f4(&p, true);
         #[cfg(feature = "stm32f1")]
         set_led_f1(&p, true);
+        #[cfg(feature = "stm32f4")]
+        set_led_f4(&p, true);
+
         delay(200000);
 
-        #[cfg(feature = "stm32f4")]
-        set_led_f4(&p, false);
         #[cfg(feature = "stm32f1")]
         set_led_f1(&p, false);
+        #[cfg(feature = "stm32f4")]
+        set_led_f4(&p, false);
+
         delay(800000);
     }
 }

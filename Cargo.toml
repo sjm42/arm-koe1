@@ -1,17 +1,20 @@
+# Cargo.toml
+
 [package]
 authors = ["Sami J. Mäkinen <sjm@iki.fi>"]
 edition = "2021"
 readme = "README.md"
 name = "cortex-m-test1"
-version = "0.3.0"
+version = "0.3.1"
+
 
 [features]
 stm32f103 = []
 stm32f411 = []
 nrf52840 = []
 
-default = ["blue_pill"]
-# default = ["nrf52840_dongle"]
+# default = ["blue_pill"]
+default = ["nrf52840_dongle"]
 
 blue_pill = ["stm32f103", "stm32f1"]
 black_pill = ["stm32f411", "stm32f4"]
@@ -19,20 +22,24 @@ nucleo_f411 = ["stm32f411", "stm32f4"]
 nrf52840_dongle = ["nrf52840", "nrf52840-pac"]
 nrf52840_dk = ["nrf52840", "nrf52840-pac"]
 
+
 [dependencies.stm32f1]
 optional = true
 version = "0.15"
 features = ["stm32f103", "rt"]
+
 
 [dependencies.stm32f4]
 optional = true
 version = "0.15"
 features = ["stm32f411", "rt"]
 
+
 [dependencies.nrf52840-pac]
 optional = true
-version = "0.11"
+version = "0.12"
 features = ["rt"]
+
 
 [dependencies]
 cortex-m = "0.7"
@@ -51,3 +58,5 @@ opt-level = 'z'
 codegen-units = 1 # better optimizations
 debug = true      # symbols are nice and they don't increase the size on Flash
 lto = true        # better optimizations
+
+# EOF

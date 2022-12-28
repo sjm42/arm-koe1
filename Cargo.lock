@@ -57,7 +57,7 @@ dependencies = [
 
 [[package]]
 name = "cortex-m-test1"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -94,9 +94,9 @@ checksum = "546c37ac5d9e56f55e73b677106873d9d9f5190605e41a856503623648488cae"
 
 [[package]]
 name = "nrf52840-pac"
-version = "0.11.0"
+version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9efa9d1e910e3b825fd7e28f369363a8e036b386b77e21035b9f0e510de199cf"
+checksum = "30713f36f1be02e5bc9abefa30eae4a1f943d810f199d4923d3ad062d1be1b3d"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
